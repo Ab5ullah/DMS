@@ -167,6 +167,12 @@ class _PatientScreenState extends State<PatientScreen> {
                           columns: const [
                             DataColumn(
                               label: Text(
+                                'Patient ID',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Text(
                                 'Name',
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
@@ -224,6 +230,15 @@ class _PatientScreenState extends State<PatientScreen> {
                                   ? WidgetStateProperty.all(Colors.red.shade50)
                                   : null,
                               cells: [
+                                DataCell(
+                                  Text(
+                                    patient.patientId ?? 'N/A',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blue.shade700,
+                                    ),
+                                  ),
+                                ),
                                 DataCell(
                                   Row(
                                     children: [
@@ -358,6 +373,7 @@ class _PatientScreenState extends State<PatientScreen> {
     final isEdit = patient != null;
     final nameController = TextEditingController(text: patient?.name);
     final phoneController = TextEditingController(text: patient?.phone);
+    final cnicController = TextEditingController(text: patient?.cnic);
     final ageController = TextEditingController(text: patient?.age?.toString());
     final addressController = TextEditingController(text: patient?.address);
     final medicalHistoryController = TextEditingController(
@@ -397,6 +413,34 @@ class _PatientScreenState extends State<PatientScreen> {
                       controller: phoneController,
                       hintText: 'Enter phone number',
                       keyboardType: TextInputType.phone,
+                      validator: (value) {
+                        if (value != null && value.isNotEmpty) {
+                          if (value.length < 10) {
+                            return 'Phone number too short';
+                          }
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    CustomTextField(
+                      label: 'CNIC',
+                      controller: cnicController,
+                      hintText: 'Enter CNIC (e.g., 12345-1234567-1)',
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value != null && value.isNotEmpty) {
+                          // Remove dashes for validation
+                          final cnicDigits = value.replaceAll('-', '');
+                          if (cnicDigits.length != 13) {
+                            return 'CNIC must be 13 digits';
+                          }
+                          if (int.tryParse(cnicDigits) == null) {
+                            return 'CNIC must contain only digits';
+                          }
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 16),
                     CustomTextField(
@@ -404,6 +448,18 @@ class _PatientScreenState extends State<PatientScreen> {
                       controller: ageController,
                       hintText: 'Enter age',
                       keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value != null && value.isNotEmpty) {
+                          final age = int.tryParse(value);
+                          if (age == null) {
+                            return 'Please enter a valid number';
+                          }
+                          if (age < 0 || age > 150) {
+                            return 'Please enter a valid age (0-150)';
+                          }
+                        }
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 16),
                     Column(
@@ -486,6 +542,9 @@ class _PatientScreenState extends State<PatientScreen> {
                     phone: phoneController.text.isEmpty
                         ? null
                         : phoneController.text,
+                    cnic: cnicController.text.isEmpty
+                        ? null
+                        : cnicController.text,
                     age: ageController.text.isEmpty
                         ? null
                         : int.tryParse(ageController.text),

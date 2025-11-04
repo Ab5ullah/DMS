@@ -58,7 +58,7 @@ class ExcelExport {
 
     // Add headers with styling
     final headers = [
-      'ID',
+      'Patient ID',
       'Name',
       'Phone',
       'Age',
@@ -80,7 +80,7 @@ class ExcelExport {
       final rowIndex = i + 1;
 
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: rowIndex))
-          .value = patient['id']?.toString() ?? '';
+          .value = patient['patient_id'] ?? '';
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: rowIndex))
           .value = patient['name'] ?? '';
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: rowIndex))

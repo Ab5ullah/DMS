@@ -6,6 +6,7 @@ import '../models/patient_model.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_textfield.dart';
 import '../config/app_config.dart';
+import '../utils/pdf_invoice.dart';
 
 class BillingScreen extends StatefulWidget {
   const BillingScreen({super.key});
@@ -93,6 +94,35 @@ class _BillingScreenState extends State<BillingScreen> {
             SnackBar(content: Text('Error deleting billing: ${e.toString()}')),
           );
         }
+      }
+    }
+  }
+
+  Future<void> _printInvoice(Billing billing) async {
+    try {
+      // Get patient details
+      final patientData = await DBHelper.instance.getPatient(billing.patientId);
+      if (patientData == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error: Patient not found')),
+          );
+        }
+        return;
+      }
+
+      final patient = Patient.fromMap(patientData);
+
+      // Generate and show print dialog
+      await PDFInvoice.generateAndPrintInvoice(
+        billing: billing,
+        patient: patient,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error printing invoice: ${e.toString()}')),
+        );
       }
     }
   }
@@ -237,6 +267,11 @@ class _BillingScreenState extends State<BillingScreen> {
                                 ),
                                 DataCell(Row(
                                   children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.print, color: Colors.green),
+                                      onPressed: () => _printInvoice(billing),
+                                      tooltip: 'Print Invoice',
+                                    ),
                                     IconButton(
                                       icon: const Icon(Icons.edit, color: Colors.blue),
                                       onPressed: () => _showBillingDialog(billing: billing),
@@ -415,8 +450,12 @@ class _BillingScreenState extends State<BillingScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter cost';
                         }
-                        if (double.tryParse(value) == null) {
+                        final cost = double.tryParse(value);
+                        if (cost == null) {
                           return 'Please enter a valid number';
+                        }
+                        if (cost <= 0) {
+                          return 'Cost must be greater than 0';
                         }
                         return null;
                       },
@@ -431,8 +470,16 @@ class _BillingScreenState extends State<BillingScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Please enter amount paid';
                         }
-                        if (double.tryParse(value) == null) {
+                        final paid = double.tryParse(value);
+                        if (paid == null) {
                           return 'Please enter a valid number';
+                        }
+                        if (paid < 0) {
+                          return 'Amount paid cannot be negative';
+                        }
+                        final cost = double.tryParse(costController.text);
+                        if (cost != null && paid > cost) {
+                          return 'Amount paid cannot exceed cost';
                         }
                         return null;
                       },

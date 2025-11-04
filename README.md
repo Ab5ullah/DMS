@@ -9,7 +9,7 @@ A complete offline Flutter desktop application for managing a dentist clinic. Th
 - Default password: `1234`
 - Password can be changed in Settings
 
-### 2. Dashboard
+### 2. Dashboard  
 - Summary cards showing:
   - Total Patients
   - Today's Appointments

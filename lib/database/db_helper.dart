@@ -33,8 +33,9 @@ class DBHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 3,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -43,8 +44,10 @@ class DBHelper {
     await db.execute('''
       CREATE TABLE patients (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        patient_id TEXT UNIQUE,
         name TEXT NOT NULL,
         phone TEXT,
+        cnic TEXT,
         age INTEGER,
         gender TEXT,
         address TEXT,
@@ -118,6 +121,7 @@ class DBHelper {
     // Insert dummy patients
     final patients = [
       {
+        'patient_id': 'PAT-001',
         'name': 'John Smith',
         'phone': '555-0101',
         'age': 35,
@@ -127,6 +131,7 @@ class DBHelper {
         'allergies': 'Penicillin'
       },
       {
+        'patient_id': 'PAT-002',
         'name': 'Sarah Johnson',
         'phone': '555-0102',
         'age': 28,
@@ -136,6 +141,7 @@ class DBHelper {
         'allergies': 'None'
       },
       {
+        'patient_id': 'PAT-003',
         'name': 'Michael Brown',
         'phone': '555-0103',
         'age': 42,
@@ -145,6 +151,7 @@ class DBHelper {
         'allergies': 'Latex'
       },
       {
+        'patient_id': 'PAT-004',
         'name': 'Emily Davis',
         'phone': '555-0104',
         'age': 31,
@@ -154,6 +161,7 @@ class DBHelper {
         'allergies': 'None'
       },
       {
+        'patient_id': 'PAT-005',
         'name': 'David Wilson',
         'phone': '555-0105',
         'age': 55,
@@ -255,9 +263,46 @@ class DBHelper {
     }
   }
 
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Add patient_id column to existing patients table
+      await db.execute('ALTER TABLE patients ADD COLUMN patient_id TEXT');
+
+      // Generate patient IDs for existing patients
+      final patients = await db.query('patients');
+      for (var i = 0; i < patients.length; i++) {
+        final patient = patients[i];
+        final patientId = 'PAT-${(patient['id'] as int).toString().padLeft(3, '0')}';
+        await db.update(
+          'patients',
+          {'patient_id': patientId},
+          where: 'id = ?',
+          whereArgs: [patient['id']],
+        );
+      }
+    }
+    if (oldVersion < 3) {
+      // Add cnic column to existing patients table
+      await db.execute('ALTER TABLE patients ADD COLUMN cnic TEXT');
+    }
+  }
+
+  // Generate next patient ID
+  Future<String> _generatePatientId() async {
+    final db = await database;
+    final result = await db.rawQuery('SELECT MAX(id) as max_id FROM patients');
+    final maxId = result.first['max_id'] as int?;
+    final nextId = (maxId ?? 0) + 1;
+    return 'PAT-${nextId.toString().padLeft(3, '0')}';
+  }
+
   // Patient CRUD operations
   Future<int> insertPatient(Map<String, dynamic> patient) async {
     final db = await database;
+    // Auto-generate patient ID if not provided
+    if (patient['patient_id'] == null) {
+      patient['patient_id'] = await _generatePatientId();
+    }
     return await db.insert('patients', patient);
   }
 
