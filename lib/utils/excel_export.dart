@@ -18,9 +18,13 @@ class ExcelExport {
       // Export Billing
       await _exportBilling(excel);
 
-      // Delete default sheet if it exists
-      if (excel.tables.containsKey('Sheet1')) {
-        excel.delete('Sheet1');
+      // Delete default sheet if it exists (do this after all sheets are created)
+      try {
+        if (excel.tables.containsKey('Sheet1')) {
+          excel.delete('Sheet1');
+        }
+      } catch (e) {
+        // Ignore if we can't delete the default sheet
       }
 
       // Save file
@@ -76,13 +80,13 @@ class ExcelExport {
       final rowIndex = i + 1;
 
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: rowIndex))
-          .value = patient['id'] ?? '';
+          .value = patient['id']?.toString() ?? '';
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: rowIndex))
           .value = patient['name'] ?? '';
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: rowIndex))
           .value = patient['phone'] ?? '';
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 3, rowIndex: rowIndex))
-          .value = patient['age'] ?? '';
+          .value = patient['age']?.toString() ?? '';
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 4, rowIndex: rowIndex))
           .value = patient['gender'] ?? '';
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 5, rowIndex: rowIndex))
@@ -119,7 +123,7 @@ class ExcelExport {
       final rowIndex = i + 1;
 
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: rowIndex))
-          .value = appointment['id'] ?? '';
+          .value = appointment['id']?.toString() ?? '';
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: rowIndex))
           .value = appointment['patient_name'] ?? 'Unknown';
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: rowIndex))
@@ -162,7 +166,7 @@ class ExcelExport {
       final balance = cost - paid;
 
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: rowIndex))
-          .value = billing['id'] ?? '';
+          .value = billing['id']?.toString() ?? '';
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 1, rowIndex: rowIndex))
           .value = billing['patient_name'] ?? 'Unknown';
       sheet.cell(CellIndex.indexByColumnRow(columnIndex: 2, rowIndex: rowIndex))

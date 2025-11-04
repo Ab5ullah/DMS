@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../database/db_helper.dart';
 import '../widgets/custom_button.dart';
 import '../utils/excel_export.dart';
+import '../config/app_config.dart';
 
 class ReportScreen extends StatefulWidget {
   const ReportScreen({super.key});
@@ -244,7 +245,7 @@ class _ReportScreenState extends State<ReportScreen> {
                               Expanded(
                                 child: _buildStatCard(
                                   'Total Income',
-                                  '\$${_totalIncome.toStringAsFixed(2)}',
+                                  '${AppConfig.currencySymbol} ${_totalIncome.toStringAsFixed(2)}',
                                   Icons.attach_money,
                                   Colors.green,
                                 ),

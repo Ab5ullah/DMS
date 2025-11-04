@@ -460,6 +460,17 @@ class DBHelper {
         : 0.0;
   }
 
+  Future<double> getTotalIncomeAll() async {
+    final db = await database;
+    final result = await db.rawQuery(
+      'SELECT SUM(paid) as total FROM billing',
+    );
+
+    return result.isNotEmpty && result.first['total'] != null
+        ? (result.first['total'] as num).toDouble()
+        : 0.0;
+  }
+
   Future<double> getTotalUnpaid() async {
     final db = await database;
     final result = await db.rawQuery(

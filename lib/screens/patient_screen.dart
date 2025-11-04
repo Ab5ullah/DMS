@@ -128,7 +128,10 @@ class _PatientScreenState extends State<PatientScreen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                     ),
                   ),
                 ),
@@ -145,102 +148,206 @@ class _PatientScreenState extends State<PatientScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _filteredPatients.isEmpty
-                    ? const Center(
-                        child: Text(
-                          'No patients found',
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
-                      )
-                    : SingleChildScrollView(
-                        padding: const EdgeInsets.all(16),
-                        child: Card(
-                          elevation: 2,
-                          child: DataTable(
-                            headingRowColor: WidgetStateProperty.all(Colors.blue.shade50),
-                            columns: const [
-                              DataColumn(label: Text('Name', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('Phone', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('Age', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('Gender', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('Address', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('Actions', style: TextStyle(fontWeight: FontWeight.bold))),
-                            ],
-                            rows: _filteredPatients.map((patient) {
-                              final hasAllergies = patient.allergies != null &&
-                                                   patient.allergies!.isNotEmpty &&
-                                                   patient.allergies!.toLowerCase() != 'none';
-                              return DataRow(
-                                color: hasAllergies
-                                    ? WidgetStateProperty.all(Colors.red.shade50)
-                                    : null,
-                                cells: [
-                                  DataCell(
-                                    Row(
-                                      children: [
-                                        if (hasAllergies)
-                                          Padding(
-                                            padding: const EdgeInsets.only(right: 8),
-                                            child: Icon(Icons.warning, color: Colors.red.shade700, size: 20),
+                ? const Center(
+                    child: Text(
+                      'No patients found',
+                      style: TextStyle(fontSize: 16, color: Colors.grey),
+                    ),
+                  )
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Card(
+                      elevation: 2,
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: DataTable(
+                          headingRowColor: WidgetStateProperty.all(
+                            Colors.blue.shade50,
+                          ),
+                          columns: const [
+                            DataColumn(
+                              label: Text(
+                                'Name',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Text(
+                                'Phone',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Text(
+                                'Age',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Text(
+                                'Gender',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Text(
+                                'Address',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Text(
+                                'Medical History',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Text(
+                                'Allergies',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            DataColumn(
+                              label: Text(
+                                'Actions',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                          rows: _filteredPatients.map((patient) {
+                            final hasAllergies =
+                                patient.allergies != null &&
+                                patient.allergies!.isNotEmpty &&
+                                patient.allergies!.toLowerCase() != 'none';
+                            return DataRow(
+                              color: hasAllergies
+                                  ? WidgetStateProperty.all(Colors.red.shade50)
+                                  : null,
+                              cells: [
+                                DataCell(
+                                  Row(
+                                    children: [
+                                      if (hasAllergies)
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            right: 8,
                                           ),
-                                        Expanded(child: Text(patient.name)),
-                                      ],
+                                          child: Icon(
+                                            Icons.warning,
+                                            color: Colors.red.shade700,
+                                            size: 20,
+                                          ),
+                                        ),
+                                      Expanded(child: Text(patient.name)),
+                                    ],
+                                  ),
+                                ),
+                                DataCell(Text(patient.phone ?? 'N/A')),
+                                DataCell(
+                                  Text(patient.age?.toString() ?? 'N/A'),
+                                ),
+                                DataCell(Text(patient.gender ?? 'N/A')),
+                                DataCell(
+                                  Container(
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 200,
+                                    ),
+                                    child: Text(
+                                      patient.address ?? 'N/A',
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 2,
                                     ),
                                   ),
-                                  DataCell(Text(patient.phone ?? 'N/A')),
-                                  DataCell(Text(patient.age?.toString() ?? 'N/A')),
-                                  DataCell(Text(patient.gender ?? 'N/A')),
-                                  DataCell(
-                                    hasAllergies
-                                        ? Tooltip(
-                                            message: 'Allergies: ${patient.allergies}',
-                                            child: Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                              decoration: BoxDecoration(
-                                                color: Colors.red.shade100,
-                                                border: Border.all(color: Colors.red.shade300),
-                                                borderRadius: BorderRadius.circular(4),
-                                              ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Icon(Icons.medical_information, color: Colors.red.shade700, size: 16),
-                                                  const SizedBox(width: 4),
-                                                  Flexible(
-                                                    child: Text(
-                                                      patient.allergies!,
-                                                      style: TextStyle(
-                                                        color: Colors.red.shade900,
-                                                        fontWeight: FontWeight.bold,
-                                                      ),
-                                                      overflow: TextOverflow.ellipsis,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          )
-                                        : Text(patient.address ?? 'N/A'),
+                                ),
+                                DataCell(
+                                  Container(
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 200,
+                                    ),
+                                    child: Text(
+                                      patient.medicalHistory ?? 'N/A',
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 2,
+                                    ),
                                   ),
-                                  DataCell(Row(
+                                ),
+                                DataCell(
+                                  hasAllergies
+                                      ? Container(
+                                          constraints: const BoxConstraints(
+                                            maxWidth: 200,
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Colors.red.shade100,
+                                            border: Border.all(
+                                              color: Colors.red.shade300,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.medical_information,
+                                                color: Colors.red.shade700,
+                                                size: 16,
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Flexible(
+                                                child: Text(
+                                                  patient.allergies!,
+                                                  style: TextStyle(
+                                                    color: Colors.red.shade900,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  maxLines: 1,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        )
+                                      : const Text('N/A'),
+                                ),
+                                DataCell(
+                                  Row(
                                     children: [
                                       IconButton(
-                                        icon: const Icon(Icons.edit, color: Colors.blue),
-                                        onPressed: () => _showPatientDialog(patient: patient),
+                                        icon: const Icon(
+                                          Icons.edit,
+                                          color: Colors.blue,
+                                        ),
+                                        onPressed: () => _showPatientDialog(
+                                          patient: patient,
+                                        ),
                                         tooltip: 'Edit',
                                       ),
                                       IconButton(
-                                        icon: const Icon(Icons.delete, color: Colors.red),
-                                        onPressed: () => _deletePatient(patient.id!),
+                                        icon: const Icon(
+                                          Icons.delete,
+                                          color: Colors.red,
+                                        ),
+                                        onPressed: () =>
+                                            _deletePatient(patient.id!),
                                         tooltip: 'Delete',
                                       ),
                                     ],
-                                  )),
-                                ],
-                              );
-                            }).toList(),
-                          ),
+                                  ),
+                                ),
+                              ],
+                            );
+                          }).toList(),
                         ),
                       ),
+                    ),
+                  ),
           ),
         ],
       ),
@@ -253,7 +360,9 @@ class _PatientScreenState extends State<PatientScreen> {
     final phoneController = TextEditingController(text: patient?.phone);
     final ageController = TextEditingController(text: patient?.age?.toString());
     final addressController = TextEditingController(text: patient?.address);
-    final medicalHistoryController = TextEditingController(text: patient?.medicalHistory);
+    final medicalHistoryController = TextEditingController(
+      text: patient?.medicalHistory,
+    );
     final allergiesController = TextEditingController(text: patient?.allergies);
     String? selectedGender = patient?.gender;
     final formKey = GlobalKey<FormState>();
@@ -316,13 +425,18 @@ class _PatientScreenState extends State<PatientScreen> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
                           ),
                           items: ['Male', 'Female', 'Other']
-                              .map((gender) => DropdownMenuItem(
-                                    value: gender,
-                                    child: Text(gender),
-                                  ))
+                              .map(
+                                (gender) => DropdownMenuItem(
+                                  value: gender,
+                                  child: Text(gender),
+                                ),
+                              )
                               .toList(),
                           onChanged: (value) {
                             setDialogState(() {
@@ -369,25 +483,43 @@ class _PatientScreenState extends State<PatientScreen> {
                   final patientData = Patient(
                     id: patient?.id,
                     name: nameController.text,
-                    phone: phoneController.text.isEmpty ? null : phoneController.text,
-                    age: ageController.text.isEmpty ? null : int.tryParse(ageController.text),
+                    phone: phoneController.text.isEmpty
+                        ? null
+                        : phoneController.text,
+                    age: ageController.text.isEmpty
+                        ? null
+                        : int.tryParse(ageController.text),
                     gender: selectedGender,
-                    address: addressController.text.isEmpty ? null : addressController.text,
-                    medicalHistory: medicalHistoryController.text.isEmpty ? null : medicalHistoryController.text,
-                    allergies: allergiesController.text.isEmpty ? null : allergiesController.text,
+                    address: addressController.text.isEmpty
+                        ? null
+                        : addressController.text,
+                    medicalHistory: medicalHistoryController.text.isEmpty
+                        ? null
+                        : medicalHistoryController.text,
+                    allergies: allergiesController.text.isEmpty
+                        ? null
+                        : allergiesController.text,
                   );
 
                   try {
                     if (isEdit) {
-                      await DBHelper.instance.updatePatient(patientData.toMap());
+                      await DBHelper.instance.updatePatient(
+                        patientData.toMap(),
+                      );
                     } else {
-                      await DBHelper.instance.insertPatient(patientData.toMap());
+                      await DBHelper.instance.insertPatient(
+                        patientData.toMap(),
+                      );
                     }
                     _loadPatients();
                     if (mounted) {
                       Navigator.of(context).pop();
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Patient ${isEdit ? 'updated' : 'added'} successfully')),
+                        SnackBar(
+                          content: Text(
+                            'Patient ${isEdit ? 'updated' : 'added'} successfully',
+                          ),
+                        ),
                       );
                     }
                   } catch (e) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../database/db_helper.dart';
 import '../widgets/summary_card.dart';
+import '../config/app_config.dart';
 import 'patient_screen.dart';
 import 'appointment_screen.dart';
 import 'billing_screen.dart';
@@ -20,6 +21,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int _totalPatients = 0;
   int _todayAppointments = 0;
   double _monthlyIncome = 0.0;
+  double _totalIncome = 0.0;
   bool _isLoading = true;
 
   final List<Widget> _screens = [
@@ -55,11 +57,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final totalPatients = await DBHelper.instance.getTotalPatients();
       final todayAppointments = await DBHelper.instance.getTodayAppointments();
       final monthlyIncome = await DBHelper.instance.getMonthlyIncome();
+      final totalIncome = await DBHelper.instance.getTotalIncomeAll();
 
       setState(() {
         _totalPatients = totalPatients;
         _todayAppointments = todayAppointments;
         _monthlyIncome = monthlyIncome;
+        _totalIncome = totalIncome;
         _isLoading = false;
       });
     } catch (e) {
@@ -74,7 +78,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(_titles[_selectedIndex]),
-        backgroundColor: Colors.blue.shade700,
+        backgroundColor: AppConfig.primaryColor,
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
@@ -131,10 +135,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               }
             },
             labelType: NavigationRailLabelType.all,
-            backgroundColor: Colors.blue.shade50,
-            selectedIconTheme: IconThemeData(color: Colors.blue.shade700),
+            backgroundColor: AppConfig.primaryColor.withValues(alpha: 0.1),
+            selectedIconTheme: IconThemeData(color: AppConfig.primaryColor),
             selectedLabelTextStyle: TextStyle(
-              color: Colors.blue.shade700,
+              color: AppConfig.primaryColor,
               fontWeight: FontWeight.bold,
             ),
             destinations: const [
@@ -203,7 +207,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
             const SizedBox(height: 24),
             GridView.count(
-              crossAxisCount: 3,
+              crossAxisCount: 4,
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               mainAxisSpacing: 16,
@@ -214,19 +218,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   title: 'Total Patients',
                   value: _totalPatients.toString(),
                   icon: Icons.people,
-                  color: Colors.blue.shade600,
+                  color: AppConfig.patientCardColor,
                 ),
                 SummaryCard(
                   title: "Today's Appointments",
                   value: _todayAppointments.toString(),
                   icon: Icons.calendar_today,
-                  color: Colors.green.shade600,
+                  color: AppConfig.appointmentCardColor,
                 ),
                 SummaryCard(
                   title: 'Monthly Income',
-                  value: '\$${_monthlyIncome.toStringAsFixed(2)}',
+                  value: '${AppConfig.currencySymbol} ${_monthlyIncome.toStringAsFixed(2)}',
                   icon: Icons.attach_money,
-                  color: Colors.orange.shade600,
+                  color: AppConfig.monthlyIncomeCardColor,
+                ),
+                SummaryCard(
+                  title: 'Total Income',
+                  value: '${AppConfig.currencySymbol} ${_totalIncome.toStringAsFixed(2)}',
+                  icon: Icons.account_balance_wallet,
+                  color: AppConfig.totalIncomeCardColor,
                 ),
               ],
             ),
@@ -257,25 +267,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         _buildQuickActionButton(
                           'Add Patient',
                           Icons.person_add,
-                          Colors.blue,
+                          AppConfig.patientCardColor,
                           () => setState(() => _selectedIndex = 1),
                         ),
                         _buildQuickActionButton(
                           'New Appointment',
                           Icons.event_available,
-                          Colors.green,
+                          AppConfig.appointmentCardColor,
                           () => setState(() => _selectedIndex = 2),
                         ),
                         _buildQuickActionButton(
                           'Add Billing',
                           Icons.receipt_long,
-                          Colors.orange,
+                          AppConfig.monthlyIncomeCardColor,
                           () => setState(() => _selectedIndex = 3),
                         ),
                         _buildQuickActionButton(
                           'View Reports',
                           Icons.bar_chart,
-                          Colors.purple,
+                          AppConfig.totalIncomeCardColor,
                           () => setState(() => _selectedIndex = 4),
                         ),
                       ],

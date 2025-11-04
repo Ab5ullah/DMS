@@ -74,10 +74,7 @@ class _LoginScreenState extends State<LoginScreen> {
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Colors.blue.shade700,
-              Colors.blue.shade400,
-            ],
+            colors: [Colors.blue.shade700, Colors.blue.shade400],
           ),
         ),
         child: Center(
@@ -141,7 +138,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                     const SizedBox(height: 16),
                     Text(
-                      'Default password: 1234',
+                      'For Password, contact administrator.',
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey.shade500,

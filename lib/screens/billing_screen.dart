@@ -5,6 +5,7 @@ import '../models/billing_model.dart';
 import '../models/patient_model.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_textfield.dart';
+import '../config/app_config.dart';
 
 class BillingScreen extends StatefulWidget {
   const BillingScreen({super.key});
@@ -141,7 +142,7 @@ class _BillingScreenState extends State<BillingScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Total unpaid balance: \$${_totalUnpaid.toStringAsFixed(2)}',
+                          'Total unpaid balance: ${AppConfig.currencySymbol} ${_totalUnpaid.toStringAsFixed(2)}',
                           style: TextStyle(
                             fontSize: 14,
                             color: Colors.red.shade900,
@@ -222,12 +223,12 @@ class _BillingScreenState extends State<BillingScreen> {
                               return DataRow(cells: [
                                 DataCell(Text(billing.patientName ?? 'Unknown')),
                                 DataCell(Text(billing.treatment)),
-                                DataCell(Text(DateFormat('MMM dd, yyyy').format(DateTime.parse(billing.date)))),
-                                DataCell(Text('\$${billing.cost.toStringAsFixed(2)}')),
-                                DataCell(Text('\$${billing.paid.toStringAsFixed(2)}')),
+                                DataCell(Text(DateFormat(AppConfig.dateFormat).format(DateTime.parse(billing.date)))),
+                                DataCell(Text('${AppConfig.currencySymbol} ${billing.cost.toStringAsFixed(2)}')),
+                                DataCell(Text('${AppConfig.currencySymbol} ${billing.paid.toStringAsFixed(2)}')),
                                 DataCell(
                                   Text(
-                                    '\$${billing.balance.toStringAsFixed(2)}',
+                                    '${AppConfig.currencySymbol} ${billing.balance.toStringAsFixed(2)}',
                                     style: TextStyle(
                                       color: billing.balance > 0 ? Colors.red : Colors.green,
                                       fontWeight: FontWeight.bold,
@@ -266,6 +267,7 @@ class _BillingScreenState extends State<BillingScreen> {
     final paidController = TextEditingController(text: billing?.paid.toString());
     DateTime selectedDate = billing != null ? DateTime.parse(billing.date) : DateTime.now();
     int? selectedPatientId = billing?.patientId;
+    int? selectedTemplateId;
     final formKey = GlobalKey<FormState>();
 
     // Load patients
@@ -359,7 +361,8 @@ class _BillingScreenState extends State<BillingScreen> {
                                 ],
                               ),
                               const SizedBox(height: 8),
-                              DropdownButtonFormField<Map<String, dynamic>>(
+                              DropdownButtonFormField<int>(
+                                value: selectedTemplateId,
                                 decoration: InputDecoration(
                                   hintText: 'Select a template (optional)',
                                   border: OutlineInputBorder(
@@ -368,14 +371,16 @@ class _BillingScreenState extends State<BillingScreen> {
                                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                                 ),
                                 items: snapshot.data!
-                                    .map((template) => DropdownMenuItem(
-                                          value: template,
-                                          child: Text('${template['name']} - \$${template['cost']}'),
+                                    .map((template) => DropdownMenuItem<int>(
+                                          value: template['id'] as int,
+                                          child: Text('${template['name']} - ${AppConfig.currencySymbol} ${template['cost']}'),
                                         ))
                                     .toList(),
-                                onChanged: (template) {
-                                  if (template != null) {
+                                onChanged: (templateId) {
+                                  if (templateId != null) {
+                                    final template = snapshot.data!.firstWhere((t) => t['id'] == templateId);
                                     setDialogState(() {
+                                      selectedTemplateId = templateId;
                                       treatmentController.text = template['name'];
                                       costController.text = template['cost'].toString();
                                     });
