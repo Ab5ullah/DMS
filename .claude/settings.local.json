@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter pub get:*)",
+      "Bash(nul)",
+      "Bash(echo:*)",
+      "Bash(README.md)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
