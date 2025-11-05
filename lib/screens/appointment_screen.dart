@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import '../database/db_helper.dart';
 import '../models/appointment_model.dart';
 import '../models/patient_model.dart';
+import '../models/billing_model.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_textfield.dart';
 
@@ -106,6 +107,267 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
     }
   }
 
+  void _createBillingFromAppointment(Appointment appointment) async {
+    final treatmentController = TextEditingController(
+      text: appointment.reason ?? '',
+    );
+    final costController = TextEditingController();
+    final paidController = TextEditingController(text: '0');
+    DateTime selectedDate = DateTime.parse(appointment.date);
+    final int selectedPatientId = appointment.patientId;
+    int? selectedTemplateId;
+    final formKey = GlobalKey<FormState>();
+
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Row(
+            children: [
+              Icon(Icons.receipt_long, color: Colors.green.shade700),
+              const SizedBox(width: 12),
+              const Text('Add Billing from Appointment'),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: SizedBox(
+              width: 500,
+              child: Form(
+                key: formKey,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Patient Info (Read-only display)
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.blue.shade200),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.person, color: Colors.blue.shade700),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Patient',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                                Text(
+                                  appointment.patientName ?? 'Unknown',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Treatment Template Quick Select
+                    FutureBuilder<List<Map<String, dynamic>>>(
+                      future: DBHelper.instance.getAllTreatmentTemplates(),
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Quick Select Template',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              DropdownButtonFormField<int>(
+                                value: selectedTemplateId,
+                                decoration: InputDecoration(
+                                  hintText: 'Select a template (optional)',
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 12,
+                                  ),
+                                ),
+                                items: snapshot.data!
+                                    .map((template) => DropdownMenuItem<int>(
+                                          value: template['id'] as int,
+                                          child: Text(
+                                            '${template['name']} - Rs. ${template['cost']}',
+                                          ),
+                                        ))
+                                    .toList(),
+                                onChanged: (templateId) {
+                                  if (templateId != null) {
+                                    final template = snapshot.data!
+                                        .firstWhere((t) => t['id'] == templateId);
+                                    setDialogState(() {
+                                      selectedTemplateId = templateId;
+                                      treatmentController.text = template['name'];
+                                      costController.text =
+                                          template['cost'].toString();
+                                    });
+                                  }
+                                },
+                              ),
+                              const SizedBox(height: 16),
+                            ],
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+
+                    CustomTextField(
+                      label: 'Treatment',
+                      controller: treatmentController,
+                      hintText: 'Enter treatment name',
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter treatment';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    CustomTextField(
+                      label: 'Cost',
+                      controller: costController,
+                      hintText: 'Enter cost',
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter cost';
+                        }
+                        final cost = double.tryParse(value);
+                        if (cost == null) {
+                          return 'Please enter a valid number';
+                        }
+                        if (cost <= 0) {
+                          return 'Cost must be greater than 0';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    CustomTextField(
+                      label: 'Amount Paid',
+                      controller: paidController,
+                      hintText: 'Enter amount paid',
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter amount paid';
+                        }
+                        final paid = double.tryParse(value);
+                        if (paid == null) {
+                          return 'Please enter a valid number';
+                        }
+                        if (paid < 0) {
+                          return 'Amount paid cannot be negative';
+                        }
+                        final cost = double.tryParse(costController.text);
+                        if (cost != null && paid > cost) {
+                          return 'Amount paid cannot exceed cost';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    CustomTextField(
+                      label: 'Date',
+                      controller: TextEditingController(
+                        text: DateFormat('MMM dd, yyyy').format(selectedDate),
+                      ),
+                      readOnly: true,
+                      onTap: () async {
+                        final date = await showDatePicker(
+                          context: context,
+                          initialDate: selectedDate,
+                          firstDate: DateTime(2020),
+                          lastDate: DateTime.now(),
+                        );
+                        if (date != null) {
+                          setDialogState(() {
+                            selectedDate = date;
+                          });
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                if (formKey.currentState!.validate()) {
+                  try {
+                    final billing = Billing(
+                      patientId: selectedPatientId,
+                      treatment: treatmentController.text.trim(),
+                      cost: double.parse(costController.text),
+                      paid: double.parse(paidController.text),
+                      date: selectedDate.toIso8601String().split('T')[0],
+                    );
+
+                    await DBHelper.instance.insertBilling(billing.toMap());
+
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Billing record created successfully'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  } catch (e) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Error creating billing: ${e.toString()}'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                }
+              },
+              child: const Text('Create Billing'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   List<Appointment> get _filteredAppointments {
     if (_filterStatus == 'All') {
       return _appointments;
@@ -192,6 +454,8 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                                           _showAppointmentDialog(appointment: appointment);
                                         } else if (value == 'delete') {
                                           _deleteAppointment(appointment.id!);
+                                        } else if (value == 'add_billing') {
+                                          _createBillingFromAppointment(appointment);
                                         } else {
                                           _updateStatus(appointment.id!, value);
                                         }
@@ -234,6 +498,17 @@ class _AppointmentScreenState extends State<AppointmentScreen> {
                                               Icon(Icons.cancel, size: 18, color: Colors.red),
                                               SizedBox(width: 8),
                                               Text('Mark as Cancelled'),
+                                            ],
+                                          ),
+                                        ),
+                                        const PopupMenuDivider(),
+                                        const PopupMenuItem(
+                                          value: 'add_billing',
+                                          child: Row(
+                                            children: [
+                                              Icon(Icons.receipt_long, size: 18, color: Colors.green),
+                                              SizedBox(width: 8),
+                                              Text('Add Billing'),
                                             ],
                                           ),
                                         ),

@@ -3,6 +3,8 @@ import '../database/db_helper.dart';
 import '../models/patient_model.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/custom_textfield.dart';
+import 'dental_chart_screen.dart';
+import 'patient_detail_screen.dart';
 
 class PatientScreen extends StatefulWidget {
   const PatientScreen({super.key});
@@ -161,62 +163,93 @@ class _PatientScreenState extends State<PatientScreen> {
                       child: SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: DataTable(
+                          columnSpacing: 20,
                           headingRowColor: WidgetStateProperty.all(
                             Colors.blue.shade50,
                           ),
                           columns: const [
                             DataColumn(
-                              label: Text(
-                                'Patient ID',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                              label: SizedBox(
+                                width: 70,
+                                child: Text(
+                                  'ID',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
                               ),
                             ),
                             DataColumn(
-                              label: Text(
-                                'Name',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                              label: SizedBox(
+                                width: 140,
+                                child: Text(
+                                  'Name',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
                               ),
                             ),
                             DataColumn(
-                              label: Text(
-                                'Phone',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                              label: SizedBox(
+                                width: 100,
+                                child: Text(
+                                  'Phone',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
                               ),
                             ),
                             DataColumn(
-                              label: Text(
-                                'Age',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                              label: SizedBox(
+                                width: 35,
+                                child: Text(
+                                  'Age',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
                               ),
                             ),
                             DataColumn(
-                              label: Text(
-                                'Gender',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                              label: SizedBox(
+                                width: 55,
+                                child: Text(
+                                  'Gender',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
                               ),
                             ),
                             DataColumn(
-                              label: Text(
-                                'Address',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                              label: SizedBox(
+                                width: 120,
+                                child: Text(
+                                  'Allergies',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
                               ),
                             ),
                             DataColumn(
-                              label: Text(
-                                'Medical History',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Allergies',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            DataColumn(
-                              label: Text(
-                                'Actions',
-                                style: TextStyle(fontWeight: FontWeight.bold),
+                              label: SizedBox(
+                                width: 180,
+                                child: Text(
+                                  'Actions',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
                               ),
                             ),
                           ],
@@ -231,129 +264,208 @@ class _PatientScreenState extends State<PatientScreen> {
                                   : null,
                               cells: [
                                 DataCell(
-                                  Text(
-                                    patient.patientId ?? 'N/A',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.blue.shade700,
+                                  SizedBox(
+                                    width: 70,
+                                    child: Text(
+                                      patient.patientId ?? 'N/A',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.blue.shade700,
+                                        fontSize: 12,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                 ),
                                 DataCell(
-                                  Row(
-                                    children: [
-                                      if (hasAllergies)
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                            right: 8,
+                                  SizedBox(
+                                    width: 140,
+                                    child: Row(
+                                      children: [
+                                        if (hasAllergies)
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                              right: 6,
+                                            ),
+                                            child: Icon(
+                                              Icons.warning,
+                                              color: Colors.red.shade700,
+                                              size: 16,
+                                            ),
                                           ),
-                                          child: Icon(
-                                            Icons.warning,
-                                            color: Colors.red.shade700,
+                                        Expanded(
+                                          child: Text(
+                                            patient.name,
+                                            style: const TextStyle(fontSize: 13),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: 100,
+                                    child: Text(
+                                      patient.phone ?? 'N/A',
+                                      style: const TextStyle(fontSize: 12),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: 35,
+                                    child: Text(
+                                      patient.age?.toString() ?? '-',
+                                      style: const TextStyle(fontSize: 12),
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: 55,
+                                    child: Text(
+                                      patient.gender ?? '-',
+                                      style: const TextStyle(fontSize: 12),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: 120,
+                                    child: hasAllergies
+                                        ? Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 6,
+                                              vertical: 3,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.red.shade100,
+                                              border: Border.all(
+                                                color: Colors.red.shade300,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(
+                                                  Icons.medical_information,
+                                                  color: Colors.red.shade700,
+                                                  size: 14,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Flexible(
+                                                  child: Text(
+                                                    patient.allergies!,
+                                                    style: TextStyle(
+                                                      color:
+                                                          Colors.red.shade900,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 11,
+                                                    ),
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                    maxLines: 1,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          )
+                                        : const Text(
+                                            '-',
+                                            style: TextStyle(fontSize: 12),
+                                          ),
+                                  ),
+                                ),
+                                DataCell(
+                                  SizedBox(
+                                    width: 180,
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.timeline,
+                                            color: Colors.purple.shade700,
                                             size: 20,
                                           ),
-                                        ),
-                                      Expanded(child: Text(patient.name)),
-                                    ],
-                                  ),
-                                ),
-                                DataCell(Text(patient.phone ?? 'N/A')),
-                                DataCell(
-                                  Text(patient.age?.toString() ?? 'N/A'),
-                                ),
-                                DataCell(Text(patient.gender ?? 'N/A')),
-                                DataCell(
-                                  Container(
-                                    constraints: const BoxConstraints(
-                                      maxWidth: 200,
-                                    ),
-                                    child: Text(
-                                      patient.address ?? 'N/A',
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 2,
-                                    ),
-                                  ),
-                                ),
-                                DataCell(
-                                  Container(
-                                    constraints: const BoxConstraints(
-                                      maxWidth: 200,
-                                    ),
-                                    child: Text(
-                                      patient.medicalHistory ?? 'N/A',
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 2,
-                                    ),
-                                  ),
-                                ),
-                                DataCell(
-                                  hasAllergies
-                                      ? Container(
+                                          padding: const EdgeInsets.all(4),
                                           constraints: const BoxConstraints(
-                                            maxWidth: 200,
+                                            minWidth: 32,
+                                            minHeight: 32,
                                           ),
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 4,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.red.shade100,
-                                            border: Border.all(
-                                              color: Colors.red.shade300,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              4,
+                                          onPressed: () => Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  PatientDetailScreen(
+                                                patient: patient,
+                                              ),
                                             ),
                                           ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Icon(
-                                                Icons.medical_information,
-                                                color: Colors.red.shade700,
-                                                size: 16,
-                                              ),
-                                              const SizedBox(width: 4),
-                                              Flexible(
-                                                child: Text(
-                                                  patient.allergies!,
-                                                  style: TextStyle(
-                                                    color: Colors.red.shade900,
-                                                    fontWeight: FontWeight.bold,
-                                                  ),
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  maxLines: 1,
-                                                ),
-                                              ),
-                                            ],
+                                          tooltip: 'Details',
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.edit,
+                                            color: Colors.blue,
+                                            size: 20,
                                           ),
-                                        )
-                                      : const Text('N/A'),
-                                ),
-                                DataCell(
-                                  Row(
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(
-                                          Icons.edit,
-                                          color: Colors.blue,
+                                          padding: const EdgeInsets.all(4),
+                                          constraints: const BoxConstraints(
+                                            minWidth: 32,
+                                            minHeight: 32,
+                                          ),
+                                          onPressed: () => _showPatientDialog(
+                                            patient: patient,
+                                          ),
+                                          tooltip: 'Edit',
                                         ),
-                                        onPressed: () => _showPatientDialog(
-                                          patient: patient,
+                                        IconButton(
+                                          icon: Icon(
+                                            Icons.medication,
+                                            color: Colors.green.shade700,
+                                            size: 20,
+                                          ),
+                                          padding: const EdgeInsets.all(4),
+                                          constraints: const BoxConstraints(
+                                            minWidth: 32,
+                                            minHeight: 32,
+                                          ),
+                                          onPressed: () => Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  DentalChartScreen(
+                                                patient: patient,
+                                              ),
+                                            ),
+                                          ),
+                                          tooltip: 'Dental Chart',
                                         ),
-                                        tooltip: 'Edit',
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(
-                                          Icons.delete,
-                                          color: Colors.red,
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.delete,
+                                            color: Colors.red,
+                                            size: 20,
+                                          ),
+                                          padding: const EdgeInsets.all(4),
+                                          constraints: const BoxConstraints(
+                                            minWidth: 32,
+                                            minHeight: 32,
+                                          ),
+                                          onPressed: () =>
+                                              _deletePatient(patient.id!),
+                                          tooltip: 'Delete',
                                         ),
-                                        onPressed: () =>
-                                            _deletePatient(patient.id!),
-                                        tooltip: 'Delete',
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ],

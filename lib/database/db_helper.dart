@@ -33,7 +33,7 @@ class DBHelper {
 
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -97,6 +97,23 @@ class DBHelper {
         name TEXT NOT NULL,
         cost REAL NOT NULL,
         description TEXT
+      )
+    ''');
+
+    // Create tooth treatments table
+    await db.execute('''
+      CREATE TABLE tooth_treatments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        patient_id INTEGER NOT NULL,
+        tooth_number INTEGER NOT NULL,
+        procedure TEXT NOT NULL,
+        status TEXT NOT NULL,
+        date TEXT NOT NULL,
+        notes TEXT,
+        billing_id INTEGER,
+        cost REAL,
+        FOREIGN KEY (patient_id) REFERENCES patients (id),
+        FOREIGN KEY (billing_id) REFERENCES billing (id)
       )
     ''');
 
@@ -284,6 +301,24 @@ class DBHelper {
     if (oldVersion < 3) {
       // Add cnic column to existing patients table
       await db.execute('ALTER TABLE patients ADD COLUMN cnic TEXT');
+    }
+    if (oldVersion < 4) {
+      // Add tooth_treatments table
+      await db.execute('''
+        CREATE TABLE tooth_treatments (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          patient_id INTEGER NOT NULL,
+          tooth_number INTEGER NOT NULL,
+          procedure TEXT NOT NULL,
+          status TEXT NOT NULL,
+          date TEXT NOT NULL,
+          notes TEXT,
+          billing_id INTEGER,
+          cost REAL,
+          FOREIGN KEY (patient_id) REFERENCES patients (id),
+          FOREIGN KEY (billing_id) REFERENCES billing (id)
+        )
+      ''');
     }
   }
 
@@ -525,6 +560,59 @@ class DBHelper {
     return result.isNotEmpty && result.first['total'] != null
         ? (result.first['total'] as num).toDouble()
         : 0.0;
+  }
+
+  // Tooth Treatment CRUD operations
+  Future<int> insertToothTreatment(Map<String, dynamic> treatment) async {
+    final db = await database;
+    return await db.insert('tooth_treatments', treatment);
+  }
+
+  Future<List<Map<String, dynamic>>> getPatientToothTreatments(int patientId) async {
+    final db = await database;
+    return await db.query(
+      'tooth_treatments',
+      where: 'patient_id = ?',
+      whereArgs: [patientId],
+      orderBy: 'date DESC',
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> getToothTreatments(int patientId, int toothNumber) async {
+    final db = await database;
+    return await db.query(
+      'tooth_treatments',
+      where: 'patient_id = ? AND tooth_number = ?',
+      whereArgs: [patientId, toothNumber],
+      orderBy: 'date DESC',
+    );
+  }
+
+  Future<Map<String, dynamic>?> getLatestToothStatus(int patientId, int toothNumber) async {
+    final db = await database;
+    final results = await db.query(
+      'tooth_treatments',
+      where: 'patient_id = ? AND tooth_number = ?',
+      whereArgs: [patientId, toothNumber],
+      orderBy: 'date DESC',
+      limit: 1,
+    );
+    return results.isNotEmpty ? results.first : null;
+  }
+
+  Future<int> updateToothTreatment(Map<String, dynamic> treatment) async {
+    final db = await database;
+    return await db.update(
+      'tooth_treatments',
+      treatment,
+      where: 'id = ?',
+      whereArgs: [treatment['id']],
+    );
+  }
+
+  Future<int> deleteToothTreatment(int id) async {
+    final db = await database;
+    return await db.delete('tooth_treatments', where: 'id = ?', whereArgs: [id]);
   }
 
   // Close database

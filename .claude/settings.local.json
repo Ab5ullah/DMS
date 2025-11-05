@@ -5,7 +5,10 @@
       "Bash(nul)",
       "Bash(echo:*)",
       "Bash(README.md)",
-      "Bash(flutter analyze:*)"
+      "Bash(flutter analyze:*)",
+      "Bash(flutter run:*)",
+      "Bash(flutter clean:*)",
+      "Bash(timeout:*)"
     ],
     "deny": [],
     "ask": []
